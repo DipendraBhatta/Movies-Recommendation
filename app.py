@@ -6,7 +6,6 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -20,7 +19,6 @@ TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 # TMDB Poster Fetch Function
 # --------------------------
 def fetch_poster_by_title(title: str) -> str:
-    """Fetch movie poster from TMDB API using the movie title."""
     try:
         params = {"api_key": TMDB_API_KEY, "query": title}
         resp = requests.get(TMDB_SEARCH_URL, params=params, timeout=10)
@@ -39,7 +37,6 @@ def fetch_poster_by_title(title: str) -> str:
 # Movie Recommendation Function
 # --------------------------
 def recommend(movie: str):
-    """Return top 5 recommended movie titles and their posters."""
     try:
         index = movies[movies["title"] == movie].index[0]
     except IndexError:
@@ -53,7 +50,7 @@ def recommend(movie: str):
     )
 
     names, posters = [], []
-    for i in distances[1:6]:  # top 5 recommendations
+    for i in distances[1:6]:
         title = movies.iloc[i[0]]["title"]
         names.append(title)
         posters.append(fetch_poster_by_title(title))
@@ -66,31 +63,55 @@ st.set_page_config(page_title="Movie Recommender", page_icon="🎬", layout="wid
 st.header("🎬 Movie Recommender System")
 
 # --------------------------
-# File paths & Google Drive URLs
+# File paths
 # --------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 movies_dict_path = os.path.join(BASE_DIR, "movie_dict.pkl")
 similarity_path = os.path.join(BASE_DIR, "similarity.pkl")
 
-MOVIE_DICT_URL = "https://drive.google.com/uc?export=download&id=1ZEaU9wCjRPRMV11BYqJ41ibF6CUUtfDE"
-SIMILARITY_URL = "https://drive.google.com/uc?export=download&id=1D-Dktq_PzfIFs1kEvQQNQV2hae8jCchK"
+# --------------------------
+# Google Drive file IDs
+# --------------------------
+MOVIE_DICT_ID = "1ZEaU9wCjRPRMV11BYqJ41ibF6CUUtfDE"
+SIMILARITY_ID = "1D-Dktq_PzfIFs1kEvQQNQV2hae8jCchK"
 
 # --------------------------
-# Function to download .pkl if missing
+# Function to download Google Drive files
 # --------------------------
-def download_file(url, path):
-    """Download file from URL if not exists locally."""
-    if not os.path.exists(path):
-        st.info(f"Downloading {os.path.basename(path)} ...")
-        r = requests.get(url)
-        r.raise_for_status()
-        with open(path, "wb") as f:
-            f.write(r.content)
-        st.success(f"{os.path.basename(path)} downloaded!")
+def download_file_from_google_drive(file_id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={"id": file_id}, stream=True)
 
-# Download pickles if missing
-download_file(MOVIE_DICT_URL, movies_dict_path)
-download_file(SIMILARITY_URL, similarity_path)
+    # Google shows a confirm token for large files
+    def get_confirm_token(resp):
+        for k, v in resp.cookies.items():
+            if k.startswith("download_warning"):
+                return v
+        return None
+
+    token = get_confirm_token(response)
+    if token:
+        params = {"id": file_id, "confirm": token}
+        response = session.get(URL, params=params, stream=True)
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:
+                f.write(chunk)
+
+# --------------------------
+# Download files if missing
+# --------------------------
+if not os.path.exists(movies_dict_path):
+    st.info("Downloading movie_dict.pkl ...")
+    download_file_from_google_drive(MOVIE_DICT_ID, movies_dict_path)
+    st.success("movie_dict.pkl downloaded!")
+
+if not os.path.exists(similarity_path):
+    st.info("Downloading similarity.pkl ...")
+    download_file_from_google_drive(SIMILARITY_ID, similarity_path)
+    st.success("similarity.pkl downloaded!")
 
 # --------------------------
 # Load pickles
