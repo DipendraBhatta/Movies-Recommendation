@@ -71,9 +71,27 @@ st.set_page_config(page_title="Movie Recommender", page_icon="🎬", layout="wid
 st.header("🎬 Movie Recommender System")
 
 # Load movies and similarity matrix
-movies_dict = pickle.load(open("movie_dict.pkl", "rb"))
-movies = pd.DataFrame(movies_dict)
-similarity = pickle.load(open("similarity.pkl", "rb"))
+# movies_dict = pickle.load(open("movie_dict.pkl", "rb"))
+# movies = pd.DataFrame(movies_dict)
+# similarity = pickle.load(open("similarity.pkl", "rb"))
+
+
+
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # directory of app.py
+
+movies_dict_path = os.path.join(BASE_DIR, "movie_dict.pkl")
+similarity_path = os.path.join(BASE_DIR, "similarity.pkl")
+
+with open(movies_dict_path, "rb") as f:
+    movies_dict = pickle.load(f)
+
+movies = pd.DataFrame(movies_dict)  
+
+with open(similarity_path, "rb") as f:
+    similarity = pickle.load(f)
+
 
 # Movie selection dropdown
 movie_list = movies["title"].values
