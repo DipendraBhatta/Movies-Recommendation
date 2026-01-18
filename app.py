@@ -76,13 +76,17 @@ st.header("🎬 Movie Recommender System")
 # similarity = pickle.load(open("similarity.pkl", "rb"))
 
 
-
-import os
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # directory of app.py
 
 movies_dict_path = os.path.join(BASE_DIR, "movie_dict.pkl")
 similarity_path = os.path.join(BASE_DIR, "similarity.pkl")
+
+
+# Safety check
+if not os.path.exists(movies_dict_path) or not os.path.exists(similarity_path):
+    st.error("Pickle files missing! Make sure 'movie_dict.pkl' and 'similarity.pkl' are in the same folder as app.py")
+    st.stop()
+
 
 with open(movies_dict_path, "rb") as f:
     movies_dict = pickle.load(f)
