@@ -5,12 +5,10 @@ import pickle
 import requests
 import pandas as pd
 import streamlit as st
+
 from dotenv import load_dotenv
 
-# --------------------------
-# Environment & config
-# --------------------------
-load_dotenv()  # loads variables from .env if present
+load_dotenv()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 if not TMDB_API_KEY:
