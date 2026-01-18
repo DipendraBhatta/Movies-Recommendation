@@ -1,12 +1,18 @@
-venv/
+# Python
 __pycache__/
 *.pyc
-*.pkl
-*.csv
-.env
-similarity.pkl
+*.pyo
+*.pyd
+*.env
+.venv/
+venv/
+
+# Large files
 movie_dict.pkl
 similarity.pkl
-movie_dict.pkl
+
+# IDEs / Editors
+.vscode/
+.idea/
 similarity.pkl
 movie_dict.pkl
