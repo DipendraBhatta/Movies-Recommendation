@@ -76,25 +76,48 @@ st.header("🎬 Movie Recommender System")
 # similarity = pickle.load(open("similarity.pkl", "rb"))
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # directory of app.py
 
+# --------------------------
+# Paths for pickle files
+# --------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 movies_dict_path = os.path.join(BASE_DIR, "movie_dict.pkl")
 similarity_path = os.path.join(BASE_DIR, "similarity.pkl")
 
+# --------------------------
+# Direct download URLs from Google Drive
+# --------------------------
+MOVIE_DICT_URL = "https://drive.google.com/uc?export=download&id=1ZEaU9wCjRPRMV11BYqJ41ibF6CUUtfDE"
+SIMILARITY_URL = "https://drive.google.com/uc?export=download&id=1D-Dktq_PzfIFs1kEvQQNQV2hae8jCchK"
 
-# Safety check
-if not os.path.exists(movies_dict_path) or not os.path.exists(similarity_path):
-    st.error("Pickle files missing! Make sure 'movie_dict.pkl' and 'similarity.pkl' are in the same folder as app.py")
-    st.stop()
+# --------------------------
+# Function to download file if missing
+# --------------------------
+def download_file(url, path):
+    if not os.path.exists(path):
+        st.info(f"Downloading {os.path.basename(path)} ...")
+        r = requests.get(url)
+        r.raise_for_status()  # fail if download fails
+        with open(path, "wb") as f:
+            f.write(r.content)
+        st.success(f"{os.path.basename(path)} downloaded!")
 
+# Download pickles if missing
+download_file(MOVIE_DICT_URL, movies_dict_path)
+download_file(SIMILARITY_URL, similarity_path)
 
+# --------------------------
+# Load pickles
+# --------------------------
 with open(movies_dict_path, "rb") as f:
     movies_dict = pickle.load(f)
-
-movies = pd.DataFrame(movies_dict)  
+movies = pd.DataFrame(movies_dict)
 
 with open(similarity_path, "rb") as f:
     similarity = pickle.load(f)
+
+
+
 
 
 # Movie selection dropdown
